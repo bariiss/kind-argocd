@@ -16,18 +16,18 @@ replicaCount: 5
 # Container Configuration
 # =============================================================================
 image:
-  repository: registry.k8s.io/echoserver
-  tag: "1.4"
+  repository: hashicorp/http-echo
+  tag: "1.0"
   pullPolicy: IfNotPresent
 
-containerPort: 8080
+containerPort: 5678
 
 # =============================================================================
 # Service Configuration
 # =============================================================================
 service:
   type: ClusterIP
-  port: 8080
+  port: 5678
 
 # =============================================================================
 # Gateway API Configuration
