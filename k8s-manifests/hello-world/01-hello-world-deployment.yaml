@@ -1,0 +1,212 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world
+  namespace: hello-world
+  labels:
+    app: hello-world
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hello-world
+  template:
+    metadata:
+      labels:
+        app: hello-world
+    spec:
+      containers:
+      - name: hello-world
+        image: nginx:1.25
+        ports:
+        - containerPort: 80
+        env:
+        - name: NGINX_PORT
+          value: "80"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            # Create a custom index.html with pod information
+            cat > /usr/share/nginx/html/pod-info.json << EOF
+            {
+              "pod_name": "${POD_NAME}",
+              "pod_ip": "${POD_IP}",
+              "node_name": "${NODE_NAME}",
+              "hostname": "$(hostname)"
+            }
+            EOF
+            # Start nginx
+            exec nginx -g 'daemon off;'
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: hello-world-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hello-world-config
+  namespace: hello-world
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name localhost;
+        charset utf-8;
+        
+        # Set environment variables as nginx variables
+        set $pod_name $http_x_pod_name;
+        set $pod_ip $http_x_pod_ip;
+        set $node_name $http_x_node_name;
+        
+        location / {
+            return 200 '<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Cilium Gateway API Demo</title>
+        <style>
+            body { 
+                font-family: Arial, sans-serif; 
+                margin: 40px; 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                color: white; 
+            }
+            .container { max-width: 800px; margin: 0 auto; text-align: center; }
+            .header { font-size: 3em; margin-bottom: 20px; }
+            .info { 
+                background: rgba(255,255,255,0.1); 
+                padding: 20px; 
+                border-radius: 10px; 
+                margin: 20px 0; 
+            }
+            .pod-info { color: #ffeb3b; font-weight: bold; }
+            .node-info { color: #4caf50; }
+            .status { margin: 10px 0; }
+            .links a { color: #ffeb3b; text-decoration: none; }
+            .links a:hover { text-decoration: underline; }
+            .refresh-btn { 
+                background: #4caf50; 
+                color: white; 
+                padding: 10px 20px; 
+                border: none; 
+                border-radius: 5px; 
+                cursor: pointer; 
+                margin: 10px;
+            }
+        </style>
+        <script>
+            function refreshPage() { 
+                window.location.reload(); 
+            }
+            function updateTime() {
+                document.getElementById("timestamp").innerText = new Date().toLocaleString(); 
+            }
+            function loadPodInfo() {
+                fetch("/pod-info.json")
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById("pod-name").innerText = data.pod_name || data.hostname || "Unknown";
+                        document.getElementById("pod-ip").innerText = data.pod_ip || "Unknown";
+                        document.getElementById("node-name").innerText = data.node_name || "Unknown";
+                    })
+                    .catch(error => {
+                        document.getElementById("pod-name").innerText = "$hostname";
+                        document.getElementById("pod-ip").innerText = "$server_addr";
+                        document.getElementById("node-name").innerText = "Check API";
+                    });
+            }
+            setInterval(updateTime, 1000);
+            window.onload = function() {
+                updateTime();
+                loadPodInfo();
+            };
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">Cilium Gateway API Demo</div>
+            <div class="info">
+                <h2>Kind Cluster + Cilium + Gateway API</h2>
+                <p>This page is served via Cilium Gateway API!</p>
+                <div class="pod-info">Pod: <span id="pod-name">Loading...</span></div>
+                <div class="pod-info">Pod IP: <span id="pod-ip">Loading...</span></div>
+                <div class="node-info">Node: <span id="node-name">Loading...</span></div>
+                <div class="node-info">Server: nginx/$nginx_version</div>
+                <div id="timestamp" class="node-info">Browser Time: Loading...</div>
+                <button class="refresh-btn" onclick="refreshPage()">Refresh to see Load Balancing</button>
+            </div>
+            <div class="info">
+                <div class="status">✓ Kube-proxy: Disabled</div>
+                <div class="status">✓ Cilium kubeProxyReplacement: Active</div>
+                <div class="status">✓ Gateway API: Enabled</div>
+                <div class="status">✓ Hubble: Running</div>
+            </div>
+            <div class="info">
+                <h3>Links</h3>
+                <div class="links">
+                    <p>Hubble UI: <a href="http://localhost:12000" target="_blank">localhost:12000</a></p>
+                    <p>This App: <a href="http://localhost:8080">localhost:8080</a></p>
+                    <p>Health Check: <a href="http://localhost:8080/health">localhost:8080/health</a></p>
+                    <p>API Info: <a href="http://localhost:8080/api/info">localhost:8080/api/info</a></p>
+                    <p>Pod Info: <a href="http://localhost:8080/pod-info.json">localhost:8080/pod-info.json</a></p>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>';
+            add_header Content-Type "text/html; charset=utf-8";
+        }
+        
+        location /health {
+            return 200 "OK\n";
+            add_header Content-Type "text/plain; charset=utf-8";
+        }
+        
+        location /api/info {
+            return 200 '{"app":"hello-world","version":"1.0.0","server":"nginx/$nginx_version","hostname":"$hostname","server_addr":"$server_addr","timestamp":"$time_iso8601","request_id":"$request_id"}';
+            add_header Content-Type "application/json; charset=utf-8";
+        }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world
+  namespace: hello-world
+  labels:
+    app: hello-world
+spec:
+  selector:
+    app: hello-world
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  type: ClusterIP
