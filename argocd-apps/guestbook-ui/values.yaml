@@ -10,7 +10,7 @@ namespace: guestbook
 # Deployment strategy: Choose between "deployment" or "rollout"
 deploymentStrategy: rollout  # Options: "deployment" or "rollout"
 
-replicaCount: 8
+replicaCount: 5
 
 # =============================================================================
 # Container Configuration
