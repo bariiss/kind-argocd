@@ -3,7 +3,7 @@ CILIUM_VERSION = 1.17.6
 GATEWAY_API_VERSION = v1.2.0
 KUBERNETES_VERSION = v1.31.2
 
-.PHONY: help setup-infrastructure create-cluster install-cilium delete-cluster deploy-argocd cleanup-argocd get-argocd-password start-port-forwards stop-port-forwards status clean all
+.PHONY: help setup-infrastructure create-cluster install-cilium delete-cluster deploy-argocd cleanup-argocd get-argocd-password install-argo-rollouts cleanup-argo-rollouts start-port-forwards stop-port-forwards status clean all
 
 # Create Kind cluster only
 create-cluster:
@@ -114,6 +114,32 @@ get-argocd-password:
 		echo "💡 Run 'make deploy-argocd' to deploy ArgoCD"; \
 	fi
 
+# Install Argo Rollouts controller
+install-argo-rollouts:
+	@echo "🚀 Installing Argo Rollouts controller..."
+	@echo "📦 Creating argo-rollouts namespace..."
+	kubectl create namespace argo-rollouts --dry-run=client -o yaml | kubectl apply -f -
+	@echo "📦 Installing Argo Rollouts CRDs and controller..."
+	kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+	@echo "⏳ Waiting for Argo Rollouts controller to be ready..."
+	kubectl wait --for=condition=available deployment/argo-rollouts -n argo-rollouts --timeout=300s
+	@echo ""
+	@echo "📋 Argo Rollouts Deployment Status:"
+	kubectl get pods -n argo-rollouts
+	@echo ""
+	@echo "✅ Argo Rollouts installation completed!"
+	@echo ""
+	@echo "💡 Argo Rollouts is now ready to manage Rollout resources"
+	@echo "💡 You can now use 'kubectl apply' with Rollout manifests"
+
+# Remove Argo Rollouts installation
+cleanup-argo-rollouts:
+	@echo "🗑️  Removing Argo Rollouts installation..."
+	kubectl delete -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml --ignore-not-found=true
+	@echo "🗂️  Removing argo-rollouts namespace..."
+	kubectl delete namespace argo-rollouts --ignore-not-found=true
+	@echo "✅ Argo Rollouts removal completed!"
+
 # Start port forwarding for services
 start-port-forwards:
 	@echo "📡 Starting Port Forwarding for services..."
@@ -159,12 +185,12 @@ status:
 	@kubectl get service -n argocd 2>/dev/null || echo "   No ArgoCD services found"
 
 # Remove all resources and cluster
-clean: cleanup-argocd delete-cluster
+clean: cleanup-argocd cleanup-argo-rollouts delete-cluster
 	@echo "🧹 All resources and cluster removed!"
 
 # Complete setup and deploy ArgoCD
-all: setup-infrastructure deploy-argocd
-	@echo "🎉 Complete setup finished and ArgoCD deployed!"
+all: setup-infrastructure deploy-argocd install-argo-rollouts
+	@echo "🎉 Complete setup finished! ArgoCD and Argo Rollouts deployed!"
 
 # Default target
 help:
@@ -185,11 +211,13 @@ help:
 	@echo "  deploy-argocd        - Deploy ArgoCD with custom configuration"
 	@echo "  cleanup-argocd       - Remove ArgoCD installation"
 	@echo "  get-argocd-password  - Get ArgoCD admin password"
+	@echo "  install-argo-rollouts - Install Argo Rollouts controller"
+	@echo "  cleanup-argo-rollouts - Remove Argo Rollouts installation"
 	@echo "  start-port-forwards  - Start port forwarding for local access"
 	@echo "  stop-port-forwards   - Stop port forwarding"
 	@echo ""
 	@echo "📋 Utility Commands:"
 	@echo "  status               - Show cluster and application status"
 	@echo "  clean                - Remove all resources and cluster"
-	@echo "  all                  - Complete setup + deploy ArgoCD"
+	@echo "  all                  - Complete setup + deploy ArgoCD + Argo Rollouts"
 	@echo ""

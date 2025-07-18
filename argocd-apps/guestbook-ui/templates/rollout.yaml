@@ -1,7 +1,9 @@
+{{- if eq .Values.deploymentStrategy "rollout" -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
   name: {{ include "chart.fullname" . }}
+  namespace: {{ .Values.namespace }}
   labels:
     {{- include "chart.labels" . | nindent 4 }}
 spec:
@@ -49,3 +51,4 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
+{{- end }}

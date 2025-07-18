@@ -4,6 +4,9 @@
 
 replicaCount: 8
 
+# Deployment strategy: Choose between "deployment" or "rollout"
+deploymentStrategy: rollout  # Options: "deployment" or "rollout"
+
 image:
   repository: gcr.io/google-samples/gb-frontend
   tag: v5
