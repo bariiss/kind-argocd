@@ -3,7 +3,4 @@ kind: Namespace
 metadata:
   name: {{ .Values.namespace }}
   labels:
-    app: {{ template "guestbook-ui.name" . }}
-    chart: {{ template "guestbook-ui.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    {{- include "chart.labels" . | nindent 4 }}

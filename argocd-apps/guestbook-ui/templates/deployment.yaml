@@ -1,25 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "guestbook-ui.fullname" . }}
+  name: {{ include "chart.fullname" . }}
   namespace: {{ .Values.namespace }}
   labels:
-    app: {{ template "guestbook-ui.name" . }}
-    chart: {{ template "guestbook-ui.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    {{- include "chart.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: {{ template "guestbook-ui.name" . }}
-      release: {{ .Release.Name }}
+      {{- include "chart.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: {{ template "guestbook-ui.name" . }}
-        release: {{ .Release.Name }}
+        {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: {{ .Chart.Name }}

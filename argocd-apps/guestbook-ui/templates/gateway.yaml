@@ -12,10 +12,7 @@ metadata:
   name: {{ .Values.gateway.name }}
   namespace: {{ .Values.namespace }}
   labels:
-    app: {{ template "guestbook-ui.name" . }}
-    chart: {{ template "guestbook-ui.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    {{- include "chart.labels" . | nindent 4 }}
 spec:
   gatewayClassName: {{ .Values.gateway.className }}
   listeners:
@@ -32,10 +29,7 @@ metadata:
   name: {{ .Values.gateway.routeName }}
   namespace: {{ .Values.namespace }}
   labels:
-    app: {{ template "guestbook-ui.name" . }}
-    chart: {{ template "guestbook-ui.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    {{- include "chart.labels" . | nindent 4 }}
 spec:
   parentRefs:
   - name: {{ .Values.gateway.name }}
@@ -51,7 +45,7 @@ spec:
         type: PathPrefix
         value: {{ .Values.gateway.pathPrefix }}
     backendRefs:
-    - name: {{ template "guestbook-ui.fullname" . }}
+    - name: {{ include "chart.fullname" . }}
       port: {{ .Values.service.port }}
       weight: 100
 {{- end }}
