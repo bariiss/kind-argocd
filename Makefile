@@ -5,34 +5,6 @@ KUBERNETES_VERSION = v1.31.2
 
 .PHONY: help setup-infrastructure create-cluster install-cilium delete-cluster deploy-argocd cleanup-argocd get-argocd-password start-port-forwards stop-port-forwards status clean all
 
-# Default target
-help:
-	@echo "🚀 Cilium Gateway API Demo - Makefile Commands"
-	@echo ""
-	@echo "📋 Version Information:"
-	@echo "  Kubernetes Version: $(KUBERNETES_VERSION)"
-	@echo "  Cilium Version: $(CILIUM_VERSION)"
-	@echo "  Gateway API Version: $(GATEWAY_API_VERSION)"
-	@echo ""
-	@echo "📋 Infrastructure Commands:"
-	@echo "  setup-infrastructure - Create cluster and install Cilium (complete setup)"
-	@echo "  create-cluster       - Create Kind cluster only"
-	@echo "  install-cilium       - Install Cilium and Gateway API on existing cluster"
-	@echo "  delete-cluster       - Delete Kind cluster"
-	@echo ""
-	@echo "📋 Application Commands:"
-	@echo "  deploy-argocd        - Deploy ArgoCD with custom configuration"
-	@echo "  cleanup-argocd       - Remove ArgoCD installation"
-	@echo "  get-argocd-password  - Get ArgoCD admin password"
-	@echo "  start-port-forwards  - Start port forwarding for local access"
-	@echo "  stop-port-forwards   - Stop port forwarding"
-	@echo ""
-	@echo "📋 Utility Commands:"
-	@echo "  status               - Show cluster and application status"
-	@echo "  clean                - Remove all resources and cluster"
-	@echo "  all                  - Complete setup + deploy ArgoCD"
-	@echo ""
-
 # Create Kind cluster only
 create-cluster:
 	@echo "🚀 Creating Kind cluster with custom configuration..."
@@ -95,7 +67,7 @@ deploy-argocd:
 	@echo "🔧 Installing ArgoCD with custom values..."
 	helm install argocd argo/argo-cd \
 		-n argocd \
-		-f k8s-manifests/argocd/00-argocd-custom-values.yaml \
+		-f k8s-manifests/argocd/values.yaml \
 		--skip-crds
 	@echo "⏳ Waiting for ArgoCD pods to be ready..."
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
@@ -193,3 +165,31 @@ clean: cleanup-argocd delete-cluster
 # Complete setup and deploy ArgoCD
 all: setup-infrastructure deploy-argocd
 	@echo "🎉 Complete setup finished and ArgoCD deployed!"
+
+# Default target
+help:
+	@echo "🚀 Cilium Gateway API Demo - Makefile Commands"
+	@echo ""
+	@echo "📋 Version Information:"
+	@echo "  Kubernetes Version: $(KUBERNETES_VERSION)"
+	@echo "  Cilium Version: $(CILIUM_VERSION)"
+	@echo "  Gateway API Version: $(GATEWAY_API_VERSION)"
+	@echo ""
+	@echo "📋 Infrastructure Commands:"
+	@echo "  setup-infrastructure - Create cluster and install Cilium (complete setup)"
+	@echo "  create-cluster       - Create Kind cluster only"
+	@echo "  install-cilium       - Install Cilium and Gateway API on existing cluster"
+	@echo "  delete-cluster       - Delete Kind cluster"
+	@echo ""
+	@echo "📋 Application Commands:"
+	@echo "  deploy-argocd        - Deploy ArgoCD with custom configuration"
+	@echo "  cleanup-argocd       - Remove ArgoCD installation"
+	@echo "  get-argocd-password  - Get ArgoCD admin password"
+	@echo "  start-port-forwards  - Start port forwarding for local access"
+	@echo "  stop-port-forwards   - Stop port forwarding"
+	@echo ""
+	@echo "📋 Utility Commands:"
+	@echo "  status               - Show cluster and application status"
+	@echo "  clean                - Remove all resources and cluster"
+	@echo "  all                  - Complete setup + deploy ArgoCD"
+	@echo ""

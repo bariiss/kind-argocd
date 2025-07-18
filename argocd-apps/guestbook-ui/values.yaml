@@ -17,6 +17,18 @@ service:
   type: ClusterIP
   port: 80
 
+gateway:
+  enabled: true
+  className: cilium
+  name: guestbook-gateway
+  port: 8080
+  protocol: HTTP
+  hostnames:
+    - "localhost"
+    - "guestbook.local"
+  routeName: guestbook-route
+  pathPrefix: /
+
 ingress:
   enabled: false
   annotations:
