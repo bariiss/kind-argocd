@@ -16,18 +16,18 @@ replicaCount: 5
 # Container Configuration
 # =============================================================================
 image:
-  repository: hashicorp/http-echo
-  tag: "1.0"
+  repository: mendhak/http-https-echo
+  tag: "37"
   pullPolicy: IfNotPresent
 
-containerPort: 5678
+containerPort: 8080
 
 # =============================================================================
 # Service Configuration
 # =============================================================================
 service:
   type: ClusterIP
-  port: 5678
+  port: 8080
 
 # =============================================================================
 # Gateway API Configuration
@@ -36,7 +36,7 @@ gateway:
   enabled: true
   className: cilium
   name: guestbook-gateway
-  port: 5678
+  port: 8080
   protocol: HTTP
   hostnames:
     - "localhost"
