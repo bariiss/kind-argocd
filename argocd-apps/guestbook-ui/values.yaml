@@ -16,8 +16,8 @@ replicaCount: 5
 # Container Configuration
 # =============================================================================
 image:
-  repository: mendhak/http-https-echo
-  tag: "37"
+  repository: jmalloc/echo-server
+  tag: "v0.3.7"
   pullPolicy: IfNotPresent
 
 containerPort: 8080
