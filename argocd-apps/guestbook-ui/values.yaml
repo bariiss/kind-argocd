@@ -36,7 +36,7 @@ gateway:
   enabled: true
   className: cilium
   name: guestbook-gateway
-  port: 8080
+  port: 5678
   protocol: HTTP
   hostnames:
     - "localhost"
