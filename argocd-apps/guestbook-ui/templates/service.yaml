@@ -4,12 +4,7 @@ metadata:
   name: {{ include "chart.fullname" . }}
   namespace: {{ .Values.namespace }}
   labels:
-{{- if .Values.gateway.enabled }}
-    {{- include "chart.labels" . | nindent 4 }}-preview
-    service-type: preview
-{{- else }}
     {{- include "chart.labels" . | nindent 4 }}
-{{- end }}
 spec:
   type: {{ .Values.service.type }}
   ports:
