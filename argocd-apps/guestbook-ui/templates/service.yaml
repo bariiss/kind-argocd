@@ -5,6 +5,7 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     {{- include "chart.labels" . | nindent 4 }}
+    service-type: preview
 spec:
   type: {{ .Values.service.type }}
   ports:
