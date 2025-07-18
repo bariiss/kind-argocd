@@ -1,4 +1,4 @@
-{{- if and (eq .Values.deploymentStrategy "rollout") (.Values.gateway.enabled) -}}
+{{- if eq .Values.deploymentStrategy "rollout" -}}
 apiVersion: v1
 kind: Service
 metadata:
