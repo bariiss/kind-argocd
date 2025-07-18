@@ -78,6 +78,23 @@ resources:
    memory: 128Mi
 
 # =============================================================================
+# Network Policy Configuration
+# =============================================================================
+networkPolicy:
+  enabled: true
+  allowedCIDRs:
+    - "10.99.11.0/24"
+    - "10.244.0.0/16"  # Kind cluster default CIDR
+  additionalIngressRules: []
+    # Example additional rules:
+    # - namespaceSelector:
+    #     matchLabels:
+    #       name: monitoring
+    #   ports:
+    #     - protocol: TCP
+    #       port: 8080
+
+# =============================================================================
 # Pod Scheduling Configuration
 # =============================================================================
 nodeSelector: {}

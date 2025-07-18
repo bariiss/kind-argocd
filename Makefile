@@ -50,6 +50,14 @@ install-cilium:
 setup-infrastructure: create-cluster install-cilium
 	@echo "🎉 Infrastructure setup completed!"
 
+# Apply Cilium Network Policy
+apply-network-policy:
+	@echo "🛡️  Applying Cilium Network Policy..."
+	kubectl apply -f k8s-manifests/cilium-network-policy.yaml
+	@echo "✅ Network Policy applied successfully!"
+	kubectl get ciliumnetworkpolicies -n guestbook
+	kubectl get networkpolicies -n guestbook
+
 # Delete Kind cluster
 delete-cluster:
 	@echo "🗑️  Deleting Kind cluster..."
